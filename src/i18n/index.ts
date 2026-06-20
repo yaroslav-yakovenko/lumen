@@ -2,7 +2,7 @@ import 'intl-pluralrules';
 
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from 'Util/Storage';
 
 // if English isn't your default language, move Translations to the appropriate language file.
 import en, { Translations } from './en';
@@ -27,14 +27,14 @@ const resources = {
 /**
  * Get stored user language
  */
-export const getStoredLanguage = async (): Promise<string> => {
+export const getStoredLanguage = (): string => {
   try {
-    const savedLanguage = await AsyncStorage.getItem(STORAGE_KEY);
+    const savedLanguage = storage.getConfigStorage().loadString(STORAGE_KEY);
     if (savedLanguage && Object.keys(resources).includes(savedLanguage)) {
       return savedLanguage;
     }
   } catch (error) {
-    console.error('Error reading language from AsyncStorage:', error);
+    console.error('Error reading language from storage:', error);
   }
 
   return fallbackLocale;
@@ -45,17 +45,17 @@ export const getStoredLanguage = async (): Promise<string> => {
  */
 export const setLanguage = async (lang: 'en' | 'ru' | 'uk') => {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, lang);
+    storage.getConfigStorage().saveString(STORAGE_KEY, lang);
     await i18n.changeLanguage(lang);
   } catch (error) {
-    console.error('Error saving language to AsyncStorage:', error);
+    console.error('Error saving language to storage:', error);
   }
 };
 
 export const initI18n = async () => {
   i18n.use(initReactI18next);
 
-  const savedLng = await getStoredLanguage();
+  const savedLng = getStoredLanguage();
 
   await i18n.init({
     resources,
